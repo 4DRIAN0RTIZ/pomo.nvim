@@ -16,7 +16,7 @@ end
 
 function M.start_pomodoro()
 	if S.status.mode ~= "idle" and not S.status.paused then
-		U.notify("Ya hay un temporizador en curso.")
+		U.notify("A timer is already running.")
 		return
 	end
 	vim.ui.input({ prompt = "Descripción del Pomodoro: " }, function(input)
@@ -28,7 +28,7 @@ end
 
 function M.start_short_break()
 	if S.status.mode ~= "idle" and not S.status.paused then
-		U.notify("Ya hay un temporizador en curso.")
+		U.notify("A timer is already running.")
 		return
 	end
 	T.start_timer("short_break")
@@ -36,7 +36,7 @@ end
 
 function M.start_long_break()
 	if S.status.mode ~= "idle" and not S.status.paused then
-		U.notify("Ya hay un temporizador en curso.")
+		U.notify("A timer is already running.")
 		return
 	end
 	T.start_timer("long_break")
@@ -44,17 +44,17 @@ end
 
 function M.pause_resume_timer()
 	if S.status.mode == "idle" then
-		U.notify("No hay un temporizador activo para pausar/reanudar.")
+		U.notify("No active timer to pause/resume.")
 		return
 	end
 
 	S.status.paused = not S.status.paused
 
 	if S.status.paused then
-		U.notify("Temporizador pausado.")
+		U.notify("Timer paused.")
 	else
 		S.status.end_time = os.time() + S.status.time_left
-		U.notify("Temporizador reanudado.")
+		U.notify("Timer resumed.")
 	end
 	S.save_state()
 	D.update_dashboard()
@@ -62,7 +62,7 @@ end
 
 function M.toggle_auto_cycle()
 	C.config.auto_cycle = not C.config.auto_cycle
-	U.notify("Ciclo automático " .. (C.config.auto_cycle and "activado." or "desactivado."))
+	U.notify("Auto cycle " .. (C.config.auto_cycle and "enabled." or "disabled."))
 	D.update_dashboard()
 end
 
@@ -71,10 +71,10 @@ function M.set_goal(goal)
 	if num_goal and num_goal > 0 then
 		S.status.daily_goal = num_goal
 		S.save_state()
-		U.notify("Objetivo diario establecido en " .. num_goal .. " pomodoros.")
+		U.notify("Daily goal set to " .. num_goal .. " pomodoros.")
 		D.update_dashboard()
 	else
-		U.notify("Por favor, proporciona un número válido para el objetivo.", "Error")
+		U.notify("Please provide a valid number for the goal.", "Error")
 	end
 end
 
@@ -102,7 +102,7 @@ end
 function M.view_pomodoros()
 	S.load_pomodoros()
 	if #S.pomodoros == 0 then
-		U.notify("No hay pomodoros registrados.")
+		U.notify("No pomodoros recorded.")
 		return
 	end
 
@@ -111,7 +111,7 @@ function M.view_pomodoros()
 		table.insert(choices, string.format("%d: %s (%s)", i, p.description or "Sin desc.", os.date("%Y-%m-%d %H:%M", p.timestamp)))
 	end
 
-	vim.ui.select(choices, { prompt = "Pomodoros Completados. Selecciona uno para gestionar:", kind = "pomo" }, function(choice)
+	vim.ui.select(choices, { prompt = "Completed Pomodoros. Select one to manage:", kind = "pomo" }, function(choice)
 		if not choice then return end
 		local selected_index = tonumber(choice:match("^(%d+):"))
 		if not selected_index then return end
@@ -122,7 +122,7 @@ function M.view_pomodoros()
 				table.remove(S.pomodoros, selected_index)
 				S.save_pomodoros()
 				S.update_today_count()
-				U.notify("Pomodoro eliminado.")
+				U.notify("Pomodoro deleted.")
 				D.update_dashboard()
 			end
 		end)

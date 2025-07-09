@@ -18,8 +18,31 @@ function M.format_time(seconds)
 end
 
 function M.notify(msg, title)
-	vim.notify(msg, vim.log.levels.INFO, { title = title or "Pomo" })
+  vim.notify(msg, vim.log.levels.INFO, { title = title or "Pomo" })
 end
+
+function M.error(msg)
+  M.notify(msg, "Error")
+end
+
+function M.warn(msg)
+  M.notify(msg, "Warning")
+end
+
+function M.info(msg)
+  M.notify(msg, "Info")
+end
+
+function M.debug(msg)
+  M.notify(msg, "Debug")
+end
+
+function M.trace(msg)
+  M.notify(msg, "Trace")
+end
+
+function M.error_hook(event, err)
+  M.notify("Error running hook '" .. event .. "': " .. err, "Error")
 
 function M.run_hook(event)
 	if C.config.hooks[event] and type(C.config.hooks[event]) == "function" then
