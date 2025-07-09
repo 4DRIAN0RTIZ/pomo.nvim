@@ -1,0 +1,167 @@
+*pomo.nvim*
+
+A Neovim plugin for managing Pomodoro timers.
+
+==============================================================================
+CONTENTS                                                *pomo-contents*
+
+1. Introduction                                         |pomo-introduction|
+2. Usage                                                |pomo-usage|
+3. Configuration                                        |pomo-configuration|
+4. Commands                                             |pomo-commands|
+5. Lualine Integration                                  |pomo-lualine|
+
+==============================================================================
+1. Introduction                                         *pomo-introduction*
+
+pomo.nvim is a simple Neovim plugin to help you stay focused with the Pomodoro
+Technique.
+
+==============================================================================
+2. Usage                                                *pomo-usage*
+
+To start using pomo.nvim, you first need to set it up in your `init.lua`:
+
+>lua
+require('pomo').setup({
+    -- Your configuration options here
+})
+<
+
+Once set up, you can use the defined commands to manage your pomodoro timers.
+For example, to start a pomodoro:
+
+>vim
+:PomoStart
+<
+
+To pause or resume the current timer:
+
+>vim
+:PomoTogglePause
+<
+
+For a visual representation of your timer and daily progress, you can toggle
+the dashboard:
+
+>vim
+:PomoDashboard
+<
+
+Refer to the |pomo-commands| section for a full list of available commands and
+their usage. For customizing the plugin, see the |pomo-configuration| section.
+
+==============================================================================
+3. Configuration                                        *pomo-configuration*
+
+The plugin can be configured by passing a table to the `setup` function.
+Here are the default values and their descriptions:
+
+>lua
+require('pomo').setup({
+    timers = {
+        pomodoro = 25 * 60,     " Duration of a pomodoro session in seconds
+        short_break = 5 * 60,   " Duration of a short break in seconds
+        long_break = 15 * 60,   " Duration of a long break in seconds
+    },
+    stages = {
+        seed = "🌱",            " Visual indicator for the initial stage of a pomodoro
+        sprout = "🌿",          " Visual indicator for the middle stage of a pomodoro
+        tree = "🌳",            " Visual indicator for the final stage of a pomodoro
+    },
+    auto_cycle = false,         " Automatically start the next timer after one finishes
+    long_break_interval = 4,    " Number of pomodoros before a long break
+    dashboard = {
+        win = nil,              " Internal: Neovim window ID for the dashboard
+        buf = nil,              " Internal: Neovim buffer ID for the dashboard
+    },
+    hooks = {
+        on_pomodoro_start = nil, " Function to call when a pomodoro starts
+        on_pomodoro_end = nil,   " Function to call when a pomodoro ends
+        on_break_start = nil,    " Function to call when a break starts
+        on_break_end = nil,      " Function to call when a break ends
+    },
+})
+<
+
+* `timers`: Table containing the durations for different timer modes.
+    * `pomodoro`: Duration of a pomodoro session in seconds (default: 25 minutes).
+    * `short_break`: Duration of a short break in seconds (default: 5 minutes).
+    * `long_break`: Duration of a long break in seconds (default: 15 minutes).
+* `stages`: Table containing visual indicators for different stages of a pomodoro.
+    * `seed`: Visual indicator for the initial stage of a pomodoro (default: "🌱").
+    * `sprout`: Visual indicator for the middle stage of a pomodoro (default: "🌿").
+    * `tree`: Visual indicator for the final stage of a pomodoro (default: "🌳").
+* `auto_cycle`: Boolean. If true, automatically starts the next timer (break or pomodoro) after the current one finishes (default: false).
+* `long_break_interval`: Number. The number of pomodoros to complete before a long break is offered (default: 4).
+* `dashboard`: Internal table for dashboard window and buffer IDs. Not meant for user configuration.
+* `hooks`: Table containing optional callback functions that are executed at different stages of the timer.
+    * `on_pomodoro_start`: Function to call when a pomodoro starts.
+    * `on_pomodoro_end`: Function to call when a pomodoro ends.
+    * `on_break_start`: Function to call when a break starts.
+    * `on_break_end`: Function to call when a break ends.
+
+
+==============================================================================
+4. Commands                                             *pomo-commands*
+
+This plugin exposes several functions that can be mapped to Neovim commands.
+
+Example of how to define commands in your `init.lua`:
+>lua
+vim.api.nvim_create_user_command('PomoStart', require('pomo').start_pomodoro, { desc = 'Start a Pomodoro timer' })
+vim.api.nvim_create_user_command('PomoShortBreak', require('pomo').start_short_break, { desc = 'Start a short break timer' })
+vim.api.nvim_create_user_command('PomoLongBreak', require('pomo').start_long_break, { desc = 'Start a long break timer' })
+vim.api.nvim_create_user_command('PomoTogglePause', require('pomo').pause_resume_timer, { desc = 'Pause/Resume the current timer' })
+vim.api.nvim_create_user_command('PomoToggleAutoCycle', require('pomo').toggle_auto_cycle, { desc = 'Toggle automatic cycling of timers' })
+vim.api.nvim_create_user_command('PomoSetGoal', function(args) require('pomo').set_goal(args.fargs[1]) end, { nargs = 1, complete = 'customlist,v:lua.require("pomo").get_completion_for_set_goal', desc = 'Set daily pomodoro goal' })
+vim.api.nvim_create_user_command('PomoView', require('pomo').view_pomodoros, { desc = 'View completed pomodoros' })
+vim.api.nvim_create_user_command('PomoDashboard', require('pomo').toggle_dashboard, { desc = 'Toggle the Pomodoro dashboard' })
+<
+
+*   `:PomoStart`
+    Starts a new pomodoro timer. You will be prompted to enter a description for the pomodoro.
+
+*   `:PomoShortBreak`
+    Starts a short break timer.
+
+*   `:PomoLongBreak`
+    Starts a long break timer.
+
+*   `:PomoTogglePause`
+    Pauses or resumes the currently active timer.
+
+*   `:PomoToggleAutoCycle`
+    Toggles the `auto_cycle` configuration option. When enabled, the plugin will automatically start the next timer (break or pomodoro) after the current one finishes.
+
+*   `:PomoSetGoal {number}`
+    Sets your daily pomodoro goal. Replace `{number}` with your desired goal.
+
+*   `:PomoView`
+    Opens a UI to view and manage your completed pomodoros. You can delete past pomodoros from here.
+
+*   `:PomoDashboard`
+    Toggles the visibility of the Pomodoro dashboard, which displays the current timer status and daily progress.
+
+==============================================================================
+5. Lualine Integration                                  *pomo-lualine*
+
+To display the pomodoro status in your lualine statusline, you can use the
+`get_lualine_status` function:
+
+>lua
+require('lualine').setup({
+  sections = {
+    lualine_a = { 'mode' },
+    lualine_b = { 'branch', 'diff', 'diagnostics' },
+    lualine_c = { { require('pomo').get_lualine_status } },
+    lualine_x = { 'encoding', 'fileformat', 'filetype' },
+    lualine_y = { 'progress' },
+    lualine_z = { 'location' }
+  }
+})
+<
+
+This will display the current pomodoro status, including the visual stage
+indicator, remaining time, description, and daily goal progress.
+
