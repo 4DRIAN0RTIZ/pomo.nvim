@@ -19,7 +19,7 @@ function M.start_pomodoro()
 		U.notify("A timer is already running.")
 		return
 	end
-	vim.ui.input({ prompt = "Descripción del Pomodoro: " }, function(input)
+	vim.ui.input({ prompt = "Pomodoro description: " }, function(input)
 		if input and input ~= "" then
 			T.start_timer("pomodoro", input)
 		end
@@ -95,7 +95,8 @@ function M.get_lualine_status()
 		end
 		local paused_indicator = S.status.paused and " ⏸️" or ""
 		local goal_str = string.format("[%d/%d]", S.status.pomodoros_today, S.status.daily_goal)
-		return string.format("%s %s (%s) - %s%s", goal_str, visual, U.format_time(S.status.time_left), S.status.description, paused_indicator)
+		return string.format("%s %s (%s) - %s%s", goal_str, visual, U.format_time(S.status.time_left), S.status.description,
+			paused_indicator)
 	end
 end
 
@@ -108,7 +109,8 @@ function M.view_pomodoros()
 
 	local choices = {}
 	for i, p in ipairs(S.pomodoros) do
-		table.insert(choices, string.format("%d: %s (%s)", i, p.description or "Sin desc.", os.date("%Y-%m-%d %H:%M", p.timestamp)))
+		table.insert(choices,
+			string.format("%d: %s (%s)", i, p.description or "Sin desc.", os.date("%Y-%m-%d %H:%M", p.timestamp)))
 	end
 
 	vim.ui.select(choices, { prompt = "Completed Pomodoros. Select one to manage:", kind = "pomo" }, function(choice)
@@ -117,7 +119,8 @@ function M.view_pomodoros()
 		if not selected_index then return end
 
 		local pomodoro_to_manage = S.pomodoros[selected_index]
-		vim.ui.select({ "Eliminar", "Cancelar" }, { prompt = "Qué quieres hacer con: '" .. pomodoro_to_manage.description .. "'?" }, function(action)
+		vim.ui.select({ "Eliminar", "Cancelar" },
+			{ prompt = "Qué quieres hacer con: '" .. pomodoro_to_manage.description .. "'?" }, function(action)
 			if action == "Eliminar" then
 				table.remove(S.pomodoros, selected_index)
 				S.save_pomodoros()
